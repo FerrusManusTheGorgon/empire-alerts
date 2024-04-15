@@ -1,4 +1,5 @@
 Empire Arms Notification Service
+
 Project Overview
 
 This Scala application is designed to monitor updates on the Empire Arms website for new postings and send notifications via Telegram when updates are detected. The application leverages Akka's Actor System for managing asynchronous operations and robust error handling, combined with Scala's powerful concurrency features.
