@@ -24,18 +24,19 @@ class EmpireArmsChecker(baseUrl: String)(implicit system: ActorSystem) extends L
     val webpageCreated = isValidUrl(url)
     if (webpageCreated) {
       println("Webpage created successfully")
+      initiateRetry() // Call initiateRetry here
       telegramService.sendMessage(url)
       Future.successful(true)
     } else {
       println(s"$url")
-      retryUntilSuccess(() => run())
+      retryUntilSuccess(() => run()) // Call retryUntilSuccess directly
     }
-
   }
 
+
   def retryUntilSuccess(runFunction: () => Future[Boolean]): Future[Boolean] = {
-    val minDelayMillis = 10000 // Minimum delay in milliseconds
-    val maxDelayMillis = 90000 // Maximum delay in milliseconds
+    val minDelayMillis = 100000 // Minimum delay in milliseconds
+    val maxDelayMillis = 900000 // Maximum delay in milliseconds
 
     def retry(): Future[Boolean] = {
       val randomDelay = Random.nextInt(maxDelayMillis - minDelayMillis) + minDelayMillis
@@ -46,7 +47,7 @@ class EmpireArmsChecker(baseUrl: String)(implicit system: ActorSystem) extends L
           if (result) {
             Future.successful(result)
           } else {
-            retry()
+            retry() // Retry recursively without considering the delay
           }
         }
       }
@@ -68,6 +69,21 @@ class EmpireArmsChecker(baseUrl: String)(implicit system: ActorSystem) extends L
         false
     }
   }
+
+//  def isValidUrl(url: String): Future[Boolean] = {
+//    Future {
+//      try {
+//        val response = requests.get(url, readTimeout = 1000, connectTimeout = 10000, check = false)
+//        val status = response.statusCode
+//        println(s"URL: $url, Status code: $status")
+//        status == 200
+//      } catch {
+//        case _: requests.TimeoutException =>
+//          println(s"URL: $url, Request timed out")
+//          false
+//      }
+//    }
+//  }
 
   def waitForNextDayAndRetry (runFunction: () => Future[Boolean]): Future[Boolean] = {
     val now = LocalDateTime.now()
